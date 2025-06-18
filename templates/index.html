@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reddit Sentiment Analysis</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+
+      .container {
+        display: flex;
+        gap: 20px; /* space between left and right sections */
+      }
+
+      .posts {
+        flex: 3; /* left side takes more space */
+        border-right: 1px solid #ccc;
+        padding-right: 20px;
+      }
+
+      .stats {
+        flex: 1; /* right side smaller */
+      }
+
+      .post {
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+      }
+
+      .post-title {
+        font-weight: bold;
+      }
+
+      .sentiment {
+        font-style: italic;
+        color: #555;
+      }
+
+      .stats ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .stats li {
+        margin-bottom: 8px;
+      }
+
+      /* Modern search form styles */
+      .search-form {
+        margin: 20px 0;
+      }
+
+      .search-form label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      .input-group {
+        display: flex;
+        max-width: 500px; /* optional max width */
+      }
+
+      .input-group input[type="text"] {
+        flex: 1;
+        padding: 10px 15px;
+        border: 2px solid #ccc;
+        border-right: none;
+        border-radius: 4px 0 0 4px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+      }
+
+      .input-group input[type="text"]:focus {
+        outline: none;
+        border-color: #007bff; /* blue highlight on focus */
+      }
+
+      .input-group button {
+        padding: 10px 20px;
+        background-color: #007bff; /* Bootstrap-like blue */
+        color: white;
+        border: none;
+        border-radius: 0 4px 4px 0;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .input-group button:hover {
+        background-color: #0056b3; /* darker blue on hover */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stock Sentiment Analysis</h1>
+
+    <!-- Search form -->
+    <form method="POST" class="search-form">
+      <label for="tickers">Enter tickers:</label>
+      <div class="input-group">
+        <input
+          type="text"
+          name="tickers"
+          id="tickers"
+          placeholder="e.g. AAPL, TSLA, MSFT"
+          required
+        />
+        <button type="submit">Analyze</button>
+      </div>
+    </form>
+
+    <!-- Main container -->
+    <div class="container">
+      <!-- Left side: posts -->
+      <div class="posts">
+        <h2>Posts</h2>
+        {% if results %} {% for result in results %}
+        <div class="post">
+          <div class="post-title">
+            <a href="{{ result.url }}" target="_blank">{{ result.title }}</a>
+          </div>
+          <div class="post-body">{{ result.body }}</div>
+          <div class="sentiment">Sentiment: {{ result.sentiment }}</div>
+        </div>
+        {% endfor %} {% else %}
+        <p>No posts found yet. Submit a ticker to see results.</p>
+        {% endif %}
+      </div>
+
+      <!-- Right side: stats -->
+      <div class="stats">
+        <h2>Sentiment Summary</h2>
+        <canvas id="sentimentChart" width="400" height="300"></canvas>
+        <ul>
+          <li><strong>Positive:</strong> {{ num_Positive }}</li>
+          <li><strong>Negative:</strong> {{ num_Negative }}</li>
+          <li><strong>Neutral:</strong> {{ num_Neutral }}</li>
+          <li><strong>Total Posts:</strong> {{ total_posts }}</li>
+        </ul>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      </div>
+    </div>
+    <script>
+      // Get the sentiment counts from Jinja2 variables
+      const positive = {{ num_Positive }};
+      const negative = {{ num_Negative }};
+      const neutral = {{ num_Neutral }};
+
+      // Setup the chart
+      const ctx = document.getElementById('sentimentChart').getContext('2d');
+      const sentimentChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Positive', 'Negative', 'Neutral'],
+          datasets: [{
+            label: 'Number of Posts',
+            data: [positive, negative, neutral],
+            backgroundColor: [
+              'rgba(40, 167, 69, 0.6)',   // green
+              'rgba(220, 53, 69, 0.6)',   // red
+              'rgba(255, 193, 7, 0.6)'    // yellow
+            ],
+            borderColor: [
+              'rgba(40, 167, 69, 1)',
+              'rgba(220, 53, 69, 1)',
+              'rgba(255, 193, 7, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              stepSize: 1
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
